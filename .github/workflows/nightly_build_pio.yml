@@ -1,0 +1,57 @@
+name: Build and Push Parallel
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "*"
+    tags:
+      - "*"
+  pull_request:
+
+jobs:
+  compile_targets:
+    name: build Marauder using PlatformIO
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+          
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install PlatformIO
+        run: |
+          wget https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py && python3 ./get-platformio.py
+          platformio --version
+
+      - name: Show platformio.ini
+        run: |
+          cat ./platformio.ini
+
+      - name: Build Artifacts
+        run: |
+          platformio run
+
+      - name: Upload Artifacts
+        run: |
+          VERSION=$(grep '#define MARAUDER_VERSION' ./esp32_marauder/configs.h | sed -E 's/.*"v([^"]+)"/v\1/' | tr '.' '_')
+          DATE=$(date +%Y%m%d)
+
+          BUILD_DIR=.pio/build
+          INPUT_BIN=$BUILD_DIR/esp32_marauder.ino.bin
+
+          mkdir -p $BUILD_DIR/artifacts
+          for t in $(find $BUILD_DIR -maxdepth 1 -type d); do
+            if [ -f "$t/firmware.bin" ]; then
+              echo "Move '$t/firmware.bin' -> '$BUILD_DIR/artifacts/esp32_marauder_${VERSION}_beta_${DATE}_$(basename $t).bin'"
+              mv "$t/firmware.bin" "$BUILD_DIR/artifacts/esp32_marauder_${VERSION}_beta_${DATE}_$(basename $t).bin"
+            fi
+          done
+          
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: esp32_marauder_${VERSION}_beta_${DATE}
+          path: $BUILD_DIR/artifacts/*
+          retention-days: 5

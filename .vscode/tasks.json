@@ -1,0 +1,22 @@
+{
+	// See https://code.visualstudio.com/docs/debugtest/tasks
+	// for the documentation about the tasks.json format
+	// https://code.visualstudio.com/docs/editor/variables-reference
+	"version": "2.0.0",
+	"tasks": [
+		{
+			// let VSCode automatically download and install PlatformIO: https://platformio.org/install/cli
+			// needs the user to allow automatic tasks to run (only necessary once - VSCode will prompt for it)
+			// see https://code.visualstudio.com/docs/editor/tasks#_run-behavior for more information
+			"label": "initial PlatformIO setup",
+			"type": "shell",
+			"linux":   { "command": "if [ ! -x ~/.platformio/penv/bin/platformio ]; then mkdir -p ~/.platformio && wget -P ~/.platformio https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py && python3 ~/.platformio/get-platformio.py; fi" },
+			"osx":     { "command": "if [ ! -x ~/.platformio/penv/bin/platformio ]; then mkdir -p ~/.platformio && wget -P ~/.platformio https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py && python3 ~/.platformio/get-platformio.py; fi" },
+			"windows": { "command": "if not exists \"%USERPROFILE%\\.platformio\\penv\\bin\\platformio\" ( makedir \"%USERPROFILE%\\.platformio\"; python \"import urllib.request; urllib.request.urlretrieve(https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py, %USERPROFILE%\\.platformio\\get-platformio.py)\"; python \"%USERPROFILE%\\.platformio\\get-platformio.py\")" },
+			"presentation": { "close": true },
+			"runOptions":   { "runOn": "folderOpen" },
+			"hide": true
+		},
+	],
+	"inputs": []
+}

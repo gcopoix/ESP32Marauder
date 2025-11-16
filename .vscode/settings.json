@@ -1,0 +1,14 @@
+{
+    "[cpp]": {
+        "editor.tabSize": 2,
+        "editor.formatOnSave": true
+    },
+    "[c]": {
+        "editor.tabSize": 2,
+        "editor.formatOnSave": true
+    },
+    "[cmake]": {
+        "editor.formatOnSave": true
+    },
+    "search.useIgnoreFiles": false
+}
