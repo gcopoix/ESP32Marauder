@@ -21,6 +21,8 @@
 
 #ifdef HAS_CYD_TOUCH
   #include <XPT2046_Touchscreen.h>
+#elif defined HAS_CAP_TOUCH
+  #include "bb_captouch.h"
 #endif
 
 // WiFi stuff
@@ -83,6 +85,8 @@ class Display
     #ifdef HAS_CYD_TOUCH
       SPIClass touchscreenSPI;
       XPT2046_Touchscreen touchscreen;
+    #elif defined HAS_CAP_TOUCH
+      BBCapTouch touchscreen;
     #endif
 
     bool printing = false;

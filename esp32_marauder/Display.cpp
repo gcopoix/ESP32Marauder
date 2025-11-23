@@ -42,9 +42,8 @@ int8_t Display::menuButton(uint16_t *x, uint16_t *y, bool pressed, bool check_ho
 uint8_t Display::updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
   #ifdef HAS_ILI9341
     if (!this->headless_mode)
-      #ifndef HAS_CYD_TOUCH
-        return this->tft.getTouch(x, y, threshold);
-      #else
+    {
+      #ifdef HAS_CYD_TOUCH
         if (this->touchscreen.tirqTouched() && this->touchscreen.touched()) {
           TS_Point p = this->touchscreen.getPoint();
 
@@ -79,10 +78,29 @@ uint8_t Display::updateTouch(uint16_t *x, uint16_t *y, uint16_t threshold) {
         }
         else
           return 0;
+      #elif defined HAS_CAP_TOUCH
+        TOUCHINFO ti;
+        if (this->touchscreen.getSamples(&ti))
+        {
+          uint32_t x_tmp = 0, y_tmp = 0;
+          for (int i = 0; i < ti.count; i++)
+          {
+            x_tmp += ti.x[i];
+            y_tmp += ti.y[i];
+          }
+          *x = (uint16_t)(x_tmp / ti.count);
+          *y = (uint16_t)(y_tmp / ti.count);
+          return 1;
+        }
+        else
+          return 0;
+      #else
+        return this->tft.getTouch(x, y, threshold);
       #endif
+    }
     else
       return !this->headless_mode;
-  #endif
+#endif
 
   return 0;
 }
@@ -166,6 +184,8 @@ void Display::RunSetup()
     this->touchscreenSPI.begin(XPT2046_CLK, XPT2046_MISO, XPT2046_MOSI, XPT2046_CS);
     this->touchscreen.begin(touchscreenSPI);
     this->touchscreen.setRotation(0);
+  #elif defined HAS_CAP_TOUCH
+    this->touchscreen.init(TOUCH_CYD_24C);
   #endif
   
   tft.init();

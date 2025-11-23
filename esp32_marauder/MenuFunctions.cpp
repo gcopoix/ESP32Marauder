@@ -1251,7 +1251,7 @@ void MenuFunctions::main(uint32_t currentTime)
   // Menu navigation and paging
   #ifdef HAS_BUTTONS
     // Don't do this for touch screens
-    #if !(defined(MARAUDER_V6) || defined(MARAUDER_V6_1) || defined(MARAUDER_CYD_MICRO) || defined(MARAUDER_CYD_GUITION) || defined(MARAUDER_CYD_2USB) || defined(MARAUDER_CYD_3_5_INCH))
+    #ifndef HAS_TOUCH
       #if !defined(MARAUDER_M5STICKC) || defined(MARAUDER_M5STICKCP2)
         #if (U_BTN >= 0 || defined(MARAUDER_CARDPUTER))
           #if (U_BTN >= 0)
@@ -1409,8 +1409,8 @@ void MenuFunctions::main(uint32_t currentTime)
         current_menu->list->get(current_menu->selected).callable();
       }
 
-    #endif
-  #endif
+    #endif // !HAS_TOUCH
+  #endif // HAS_BUTTONS
 }
 
 #if BATTERY_ANALOG_ON == 1
