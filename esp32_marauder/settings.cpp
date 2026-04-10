@@ -67,10 +67,9 @@ bool Settings::begin() {
   String json_string;
   DynamicJsonDocument jsonBuffer(JSON_SETTING_SIZE);
   DeserializationError error = deserializeJson(jsonBuffer, settingsFile);
-  if (error) {
-    Serial.print("Could not parse json during setup: ");
+  if (error)
     Serial.println(error.f_str());
-  }
+
   serializeJson(jsonBuffer, json_string);
 
   this->json_settings_string = json_string;
@@ -91,9 +90,7 @@ template <typename T> T Settings::loadSetting(String key) {}
 template <> int Settings::loadSetting<int>(String key) {
   // No int settings are defined currently; fall back to parsing if ever added.
   DynamicJsonDocument json(JSON_SETTING_SIZE);
-  if (deserializeJson(json, this->json_settings_string)) {
-    Serial.println(F("\nCould not parse json"));
-  }
+  deserializeJson(json, this->json_settings_string);
   for (int i = 0; i < (int)json["Settings"].size(); i++) {
     if (json["Settings"][i]["name"].as<String>() == key)
       return json["Settings"][i]["value"];
@@ -110,15 +107,13 @@ template <> String Settings::loadSetting<String>(String key) {
 
   // Unknown String key: fall back to JSON so the setting can be auto-created.
   DynamicJsonDocument json(JSON_SETTING_SIZE);
-  if (deserializeJson(json, this->json_settings_string)) {
-    Serial.println(F("\nCould not parse json"));
-  }
+  deserializeJson(json, this->json_settings_string);
   for (int i = 0; i < (int)json["Settings"].size(); i++) {
     if (json["Settings"][i]["name"].as<String>() == key)
       return json["Settings"][i]["value"].as<String>();
   }
 
-  Serial.println("Did not find setting named " + (String)key + ". Creating...");
+  //Serial.println("Did not find setting named " + (String)key + ". Creating...");
   if (this->createDefaultSettings(SPIFFS, true, json["Settings"].size(),
                                   "String", key))
     return "";
@@ -143,15 +138,13 @@ template <> bool Settings::loadSetting<bool>(String key) {
 
   // Unknown bool key: fall back to JSON so the setting can be auto-created.
   DynamicJsonDocument json(JSON_SETTING_SIZE);
-  if (deserializeJson(json, this->json_settings_string)) {
-    Serial.println(F("Could not parse json to load"));
-  }
+  deserializeJson(json, this->json_settings_string);
   for (int i = 0; i < (int)json["Settings"].size(); i++) {
     if (json["Settings"][i]["name"].as<String>() == key)
       return json["Settings"][i]["value"].as<bool>();
   }
 
-  Serial.println("Did not find setting named " + (String)key + ". Creating...");
+  //Serial.println("Did not find setting named " + (String)key + ". Creating...");
   if (this->createDefaultSettings(SPIFFS, true, json["Settings"].size(), "bool",
                                   key))
     return true;
@@ -176,9 +169,7 @@ template <> uint8_t Settings::loadSetting<uint8_t>(String key) {
     return (uint8_t)_cache.ChanHop;
 
   DynamicJsonDocument json(JSON_SETTING_SIZE);
-  if (deserializeJson(json, this->json_settings_string)) {
-    Serial.println(F("\nCould not parse json"));
-  }
+  deserializeJson(json, this->json_settings_string);
   for (int i = 0; i < (int)json["Settings"].size(); i++) {
     if (json["Settings"][i]["name"].as<String>() == key)
       return json["Settings"][i]["value"].as<uint8_t>();
@@ -195,9 +186,7 @@ template <typename T> T Settings::saveSetting(String key, bool value) {}
 template <> bool Settings::saveSetting<bool>(String key, bool value) {
   DynamicJsonDocument json(JSON_SETTING_SIZE);
 
-  if (deserializeJson(json, this->json_settings_string)) {
-    Serial.println(F("\nCould not parse json"));
-  }
+  deserializeJson(json, this->json_settings_string);
 
   String settings_string;
 
@@ -205,21 +194,14 @@ template <> bool Settings::saveSetting<bool>(String key, bool value) {
     if (json["Settings"][i]["name"].as<String>() == key) {
       json["Settings"][i]["value"] = value;
 
-      Serial.println("Saving setting...");
-
       File settingsFile = SPIFFS.open("/settings.json", FILE_WRITE);
 
       if (!settingsFile) {
-        Serial.println(F("Failed to create settings file"));
         return false;
       }
 
-      if (serializeJson(json, settingsFile) == 0) {
-        Serial.println(F("Failed to write to file"));
-      }
-      if (serializeJson(json, settings_string) == 0) {
-        Serial.println(F("Failed to write to string"));
-      }
+      serializeJson(json, settingsFile);
+      serializeJson(json, settings_string);
 
       settingsFile.close();
 
@@ -252,9 +234,7 @@ template <typename T> T Settings::saveSetting(String key, String value) {}
 template <> bool Settings::saveSetting<bool>(String key, String value) {
   DynamicJsonDocument json(JSON_SETTING_SIZE);
 
-  if (deserializeJson(json, this->json_settings_string)) {
-    Serial.println(F("\nCould not parse json"));
-  }
+  deserializeJson(json, this->json_settings_string);
 
   String settings_string;
 
@@ -262,21 +242,15 @@ template <> bool Settings::saveSetting<bool>(String key, String value) {
     if (json["Settings"][i]["name"].as<String>() == key) {
       json["Settings"][i]["value"] = value;
 
-      Serial.println("Saving setting...");
+      //Serial.println("Saving setting...");
 
       File settingsFile = SPIFFS.open("/settings.json", FILE_WRITE);
 
-      if (!settingsFile) {
-        Serial.println(F("Failed to create settings file"));
+      if (!settingsFile)
         return false;
-      }
 
-      if (serializeJson(json, settingsFile) == 0) {
-        Serial.println(F("Failed to write to file"));
-      }
-      if (serializeJson(json, settings_string) == 0) {
-        Serial.println(F("Failed to write to string"));
-      }
+      serializeJson(json, settingsFile);
+      serializeJson(json, settings_string);
 
       settingsFile.close();
 
@@ -305,11 +279,11 @@ bool Settings::toggleSetting(String key) {
   bool current = this->loadSetting<bool>(key);
   if (current) {
     saveSetting<bool>(key, false);
-    Serial.println("Setting value to false");
+    //Serial.println("Setting value to false");
     return false;
   } else {
     saveSetting<bool>(key, true);
-    Serial.println("Setting value to true");
+    //Serial.println("Setting value to true");
     return true;
   }
 }
@@ -321,9 +295,7 @@ bool Settings::toggleSetting(String key) {
 String Settings::setting_index_to_name(int i) {
   DynamicJsonDocument json(JSON_SETTING_SIZE);
 
-  if (deserializeJson(json, this->json_settings_string)) {
-    Serial.println(F("\nCould not parse json"));
-  }
+  deserializeJson(json, this->json_settings_string);
 
   return json["Settings"][i]["name"];
 }
@@ -331,9 +303,7 @@ String Settings::setting_index_to_name(int i) {
 int Settings::getNumberSettings() {
   DynamicJsonDocument json(JSON_SETTING_SIZE);
 
-  if (deserializeJson(json, this->json_settings_string)) {
-    Serial.println(F("\nCould not parse json"));
-  }
+  deserializeJson(json, this->json_settings_string);
 
   return json["Settings"].size();
 }
@@ -341,12 +311,7 @@ int Settings::getNumberSettings() {
 String Settings::getSettingType(String key) {
   DynamicJsonDocument json(JSON_SETTING_SIZE);
 
-  DeserializationError error = deserializeJson(json, this->json_settings_string);
-
-  if (error) {
-    Serial.print(F("\nCould not parse json: "));
-    Serial.println(error.f_str());
-  }
+  deserializeJson(json, this->json_settings_string);
 
   for (int i = 0; i < (int)json["Settings"].size(); i++) {
     if (json["Settings"][i]["name"].as<String>() == key)
@@ -359,9 +324,7 @@ String Settings::getSettingType(String key) {
 void Settings::printJsonSettings(String json_string) {
   DynamicJsonDocument json(JSON_SETTING_SIZE);
 
-  if (deserializeJson(json, json_string)) {
-    Serial.println(F("\nCould not parse json"));
-  }
+  deserializeJson(json, json_string);
 
   Serial.println("Settings\n----------------------------------------------");
   for (int i = 0; i < (int)json["Settings"].size(); i++) {
@@ -374,13 +337,11 @@ void Settings::printJsonSettings(String json_string) {
 // ---------------------------------------------------------------------------
 // createDefaultSettings — sets json_settings_string then rebuilds the cache.
 // ---------------------------------------------------------------------------
-bool Settings::createDefaultSettings(fs::FS &fs, bool spec, uint8_t index, String typeStr, String name) {
-  Serial.println(F("Creating default settings file: settings.json"));
-  
+bool Settings::createDefaultSettings(fs::FS &fs, bool spec, uint8_t index, String typeStr, String name) {  
   File settingsFile = fs.open("/settings.json", FILE_WRITE);
 
   if (!settingsFile) {
-    Serial.println(F("Failed to create settings file"));
+    //Serial.println(F("Failed to create settings file"));
     return false;
   }
 
@@ -448,11 +409,8 @@ bool Settings::createDefaultSettings(fs::FS &fs, bool spec, uint8_t index, Strin
     DynamicJsonDocument json(JSON_SETTING_SIZE); // ArduinoJson v6
 
     if (deserializeJson(json, this->json_settings_string)) {
-      Serial.println("Could not parse json to create new setting");
       return false;
     }
-
-    Serial.println("Creating " + typeStr + " setting...");
 
     if (typeStr == "bool") {
       
